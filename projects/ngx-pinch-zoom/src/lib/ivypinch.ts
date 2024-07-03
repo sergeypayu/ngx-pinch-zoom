@@ -1,55 +1,49 @@
-import { Touches } from './touches';
+import { EventType, Touches } from './touches';
 import { Properties } from './interfaces';
 import { defaultProperties } from './properties';
 
-type PropertyName = keyof Properties;
-
 export class IvyPinch {
-    properties: Properties = defaultProperties;
-    touches: any;
-    element: any;
-    elementTarget: any;
-    parentElement: any;
-    i: number = 0;
+    private readonly properties: Properties = defaultProperties;
+    private touches: Touches;
+    private readonly element: HTMLElement;
+    private readonly elementTarget: string;
+    private parentElement: HTMLElement;
     public scale: number = 1;
-    initialScale: number = 1;
-    elementPosition: any;
-    eventType: any;
-    startX: number = 0;
-    startY: number = 0;
-    moveX: number = 0;
-    moveY: number = 0;
-    initialMoveX: number = 0;
-    initialMoveY: number = 0;
-    moveXC: number = 0;
-    moveYC: number = 0;
-    lastTap: number = 0;
-    draggingMode: boolean = false;
-    distance: number = 0;
-    doubleTapTimeout: number = 0;
-    initialDistance: number = 0;
-    events: any = {};
-    maxScale!: number;
-    defaultMaxScale: number = 3;
+    private initialScale: number = 1;
+    private elementPosition: DOMRect;
+    private eventType: EventType;
+    private startX: number = 0;
+    private startY: number = 0;
+    private moveX: number = 0;
+    private moveY: number = 0;
+    private initialMoveX: number = 0;
+    private initialMoveY: number = 0;
+    private moveXC: number = 0;
+    private moveYC: number = 0;
+    private distance: number = 0;
+    private initialDistance: number = 0;
+    public maxScale!: number;
+    private defaultMaxScale: number = 3;
 
     // Minimum scale at which panning works
-    get minPanScale() {
+    get minPanScale(): number {
         return this.getPropertiesValue('minPanScale');
     }
 
-    get fullImage() {
+    get fullImage(): { path: string; minScale?: number } {
         return this.properties.fullImage;
     }
 
-    constructor(properties: any) {
+    constructor(properties: Properties) {
         this.element = properties.element;
 
         if (!this.element) {
             return;
         }
 
-        if(typeof properties.limitZoom === 'number')
+        if (typeof properties.limitZoom === 'number') {
             this.maxScale = properties.limitZoom;
+        }
         this.elementTarget = this.element.querySelector('*').tagName;
         this.parentElement = this.element.parentElement;
         this.properties = Object.assign({}, defaultProperties, properties);
@@ -96,8 +90,8 @@ export class IvyPinch {
 
     /* Touchstart */
 
-    handleTouchstart = (event: any) => {
-        this.touches.addEventListeners('mousemove', 'handleMousemove');
+    private handleTouchstart = (event: TouchEvent | MouseEvent): void => {
+        this.touches.addEventListeners('mousemove');
         this.getElementPosition();
 
         if (this.eventType === undefined) {
@@ -107,12 +101,10 @@ export class IvyPinch {
 
     /* Touchend */
 
-    handleTouchend = (event: any) => {
+    private handleTouchend = (event: TouchEvent | MouseEvent): void => {
         /* touchend */
         if (event.type === 'touchend') {
-            this.i = 0;
-            this.draggingMode = false;
-            const touches = event.touches;
+            const touches = (event as TouchEvent).touches;
 
             // Min scale
             if (this.scale < 1) {
@@ -148,19 +140,18 @@ export class IvyPinch {
 
         /* mouseup */
         if (event.type === 'mouseup') {
-            this.draggingMode = false;
             this.updateInitialValues();
             this.eventType = undefined;
         }
 
-        this.touches.removeEventListeners('mousemove', 'handleMousemove');
+        this.touches.removeEventListeners('mousemove');
     };
 
     /*
      * Handlers
      */
 
-    handlePan = (event: any) => {
+    private handlePan = (event: TouchEvent | MouseEvent): void => {
         if (this.scale < this.minPanScale || this.properties.disablePan) {
             return;
         }
@@ -190,12 +181,12 @@ export class IvyPinch {
         this.transformElement(0);
     };
 
-    handleDoubleTap = (event: any) => {
+    private handleDoubleTap = (event: TouchEvent): void => {
         this.toggleZoom(event);
         return;
     };
 
-    handlePinch = (event: any) => {
+    private handlePinch = (event: TouchEvent): void => {
         event.preventDefault();
 
         if (this.eventType === undefined || this.eventType === 'pinch') {
@@ -230,11 +221,11 @@ export class IvyPinch {
         }
     };
 
-    handleWheel = (event: any) => {
+    private handleWheel = (event: WheelEvent): void => {
         event.preventDefault();
 
-        let wheelZoomFactor = this.properties.wheelZoomFactor || 0;
-        let zoomFactor = event.deltaY < 0 ? wheelZoomFactor : -wheelZoomFactor;
+        const wheelZoomFactor = this.properties.wheelZoomFactor || 0;
+        const zoomFactor = event.deltaY < 0 ? wheelZoomFactor : -wheelZoomFactor;
         let newScale = this.initialScale + zoomFactor;
 
         /* Round value */
@@ -256,8 +247,8 @@ export class IvyPinch {
         this.scale = newScale;
 
         /* Get cursor position over image */
-        let xCenter = event.clientX - this.elementPosition.left - this.initialMoveX;
-        let yCenter = event.clientY - this.elementPosition.top - this.initialMoveY;
+        const xCenter = event.clientX - this.elementPosition.left - this.initialMoveX;
+        const yCenter = event.clientY - this.elementPosition.top - this.initialMoveY;
 
         this.setZoom({
             scale: newScale,
@@ -265,11 +256,11 @@ export class IvyPinch {
         });
     };
 
-    handleResize = (_event: any) => {
+    private handleResize = (_event: Event): void => {
         this.setAutoHeight();
     };
 
-    handleLimitZoom() {
+    private handleLimitZoom(): void {
         const limitZoom = this.maxScale;
         const minScale = this.properties.minScale || 0;
 
@@ -297,12 +288,12 @@ export class IvyPinch {
         }
     }
 
-    moveLeft(event: any, index: number = 0) {
+    private moveLeft(event: TouchEvent | MouseEvent, index: number = 0): number {
         const clientX = this.getClientPosition(event, index).clientX;
         return clientX - this.elementPosition.left;
     }
 
-    moveTop(event: any, index: number = 0) {
+    private moveTop(event: TouchEvent | MouseEvent, index: number = 0): number {
         const clientY = this.getClientPosition(event, index).clientY;
         return clientY - this.elementPosition.top;
     }
@@ -311,8 +302,8 @@ export class IvyPinch {
      * Detection
      */
 
-    centeringImage() {
-        const img = this.element.getElementsByTagName(this.elementTarget)[0];
+    private centeringImage(): boolean {
+        const img = this.getImageElement();
         const initialMoveX = this.moveX;
         const initialMoveY = this.moveY;
 
@@ -336,7 +327,7 @@ export class IvyPinch {
         return initialMoveX !== this.moveX || initialMoveY !== this.moveY;
     }
 
-    limitPanY() {
+    private limitPanY(): void {
         const imgHeight = this.getImageHeight();
         const scaledImgHeight = imgHeight * this.scale;
         const parentHeight = this.parentElement.offsetHeight;
@@ -355,7 +346,7 @@ export class IvyPinch {
         }
     }
 
-    limitPanX() {
+    private limitPanX(): void {
         const imgWidth = this.getImageWidth();
         const scaledImgWidth = imgWidth * this.scale;
         const parentWidth = this.parentElement.offsetWidth;
@@ -374,7 +365,7 @@ export class IvyPinch {
         }
     }
 
-    setBasicStyles() {
+    private setBasicStyles(): void {
         this.element.style.display = 'flex';
         this.element.style.alignItems = 'center';
         this.element.style.justifyContent = 'center';
@@ -383,7 +374,7 @@ export class IvyPinch {
         this.setDraggableImage();
     }
 
-    removeBasicStyles() {
+    private removeBasicStyles(): void {
         this.element.style.display = '';
         this.element.style.alignItems = '';
         this.element.style.justifyContent = '';
@@ -392,7 +383,7 @@ export class IvyPinch {
         this.removeDraggableImage();
     }
 
-    setDraggableImage() {
+    private setDraggableImage(): void {
         const imgElement = this.getImageElement();
 
         if (imgElement) {
@@ -400,7 +391,7 @@ export class IvyPinch {
         }
     }
 
-    removeDraggableImage() {
+    private removeDraggableImage(): void {
         const imgElement = this.getImageElement();
 
         if (imgElement) {
@@ -408,8 +399,8 @@ export class IvyPinch {
         }
     }
 
-    setImageSize() {
-        const imgElement = this.element.getElementsByTagName(this.elementTarget);
+    private setImageSize(): void {
+        const imgElement = this.getImageElements();
 
         if (imgElement.length) {
             imgElement[0].style.maxWidth = '100%';
@@ -419,8 +410,8 @@ export class IvyPinch {
         }
     }
 
-    setAutoHeight() {
-        const imgElement = this.element.getElementsByTagName(this.elementTarget);
+    private setAutoHeight(): void {
+        const imgElement = this.getImageElements();
 
         if (!this.properties.autoHeight || !imgElement.length) {
             return;
@@ -428,14 +419,14 @@ export class IvyPinch {
 
         const imgNaturalWidth = imgElement[0].getAttribute('width');
         const imgNaturalHeight = imgElement[0].getAttribute('height');
-        const sizeRatio = imgNaturalWidth / imgNaturalHeight;
+        const sizeRatio = +imgNaturalWidth / +imgNaturalHeight;
         const parentWidth = this.parentElement.offsetWidth;
 
         imgElement[0].style.maxHeight = parentWidth / sizeRatio + 'px';
     }
 
-    removeImageSize() {
-        const imgElement = this.element.getElementsByTagName(this.elementTarget);
+    private removeImageSize(): void {
+        const imgElement = this.getImageElements();
 
         if (imgElement.length) {
             imgElement[0].style.maxWidth = '';
@@ -443,28 +434,28 @@ export class IvyPinch {
         }
     }
 
-    getElementPosition() {
+    private getElementPosition(): void {
         this.elementPosition = this.element.parentElement.getBoundingClientRect();
     }
 
-    getTouchstartPosition(event: any) {
+    private getTouchstartPosition(event: TouchEvent | MouseEvent): void {
         const { clientX, clientY } = this.getClientPosition(event);
 
         this.startX = clientX - this.elementPosition.left;
         this.startY = clientY - this.elementPosition.top;
     }
 
-    getClientPosition(event: any, index: number = 0) {
-        let clientX;
-        let clientY;
+    private getClientPosition(event: TouchEvent | MouseEvent, index: number = 0): { clientX: number; clientY: number } {
+        let clientX: number;
+        let clientY: number;
 
         if (event.type === 'touchstart' || event.type === 'touchmove') {
-            clientX = event.touches[index].clientX;
-            clientY = event.touches[index].clientY;
+            clientX = (event as TouchEvent).touches[index].clientX;
+            clientY = (event as TouchEvent).touches[index].clientY;
         }
         if (event.type === 'mousedown' || event.type === 'mousemove') {
-            clientX = event.clientX;
-            clientY = event.clientY;
+            clientX = (event as MouseEvent).clientX;
+            clientY = (event as MouseEvent).clientY;
         }
 
         return {
@@ -473,7 +464,7 @@ export class IvyPinch {
         };
     }
 
-    resetScale() {
+    private resetScale(): void {
         this.scale = 1;
         this.moveX = 0;
         this.moveY = 0;
@@ -481,33 +472,43 @@ export class IvyPinch {
         this.transformElement(this.properties.transitionDuration);
     }
 
-    updateInitialValues() {
+    private updateInitialValues(): void {
         this.initialScale = this.scale;
         this.initialMoveX = this.moveX;
         this.initialMoveY = this.moveY;
     }
 
-    getDistance(touches: any) {
-        return Math.sqrt(Math.pow(touches[0].pageX - touches[1].pageX, 2) + Math.pow(touches[0].pageY - touches[1].pageY, 2));
+    private getDistance(touches: TouchList): number {
+        return Math.sqrt(
+            Math.pow(touches[0].pageX - touches[1].pageX, 2) + Math.pow(touches[0].pageY - touches[1].pageY, 2),
+        );
     }
 
-    getImageHeight() {
-        const img = this.element.getElementsByTagName(this.elementTarget)[0];
+    private getImageHeight(): number {
+        const img = this.getImageElement() as HTMLImageElement;
         return img.offsetHeight;
     }
 
-    getImageWidth() {
-        const img = this.element.getElementsByTagName(this.elementTarget)[0];
+    private getImageWidth(): number {
+        const img = this.getImageElement() as HTMLImageElement;
         return img.offsetWidth;
     }
 
-    transformElement(duration: any) {
+    private transformElement(duration: number): void {
         this.element.style.transition = 'all ' + duration + 'ms';
         this.element.style.transform =
-            'matrix(' + Number(this.scale) + ', 0, 0, ' + Number(this.scale) + ', ' + Number(this.moveX) + ', ' + Number(this.moveY) + ')';
+            'matrix(' +
+            Number(this.scale) +
+            ', 0, 0, ' +
+            Number(this.scale) +
+            ', ' +
+            Number(this.moveX) +
+            ', ' +
+            Number(this.moveY) +
+            ')';
     }
 
-    isTouchScreen() {
+    private isTouchScreen(): boolean {
         const prefixes = ' -webkit- -moz- -o- -ms- '.split(' ');
 
         if ('ontouchstart' in window) {
@@ -520,11 +521,11 @@ export class IvyPinch {
         return this.getMatchMedia(query);
     }
 
-    getMatchMedia(query: any) {
+    private getMatchMedia(query: string): boolean {
         return window.matchMedia(query).matches;
     }
 
-    isDragging() {
+    public isDragging(): boolean {
         if (this.properties.disablePan) {
             return false;
         }
@@ -533,7 +534,10 @@ export class IvyPinch {
         const imgWidth = this.getImageWidth();
 
         if (this.scale > 1) {
-            return imgHeight * this.scale > this.parentElement.offsetHeight || imgWidth * this.scale > this.parentElement.offsetWidth;
+            return (
+                imgHeight * this.scale > this.parentElement.offsetHeight ||
+                imgWidth * this.scale > this.parentElement.offsetWidth
+            );
         }
         if (this.scale === 1) {
             return imgHeight > this.parentElement.offsetHeight || imgWidth > this.parentElement.offsetWidth;
@@ -542,7 +546,7 @@ export class IvyPinch {
         return undefined;
     }
 
-    detectLimitZoom() {
+    public detectLimitZoom(): void {
         // Assign to default only if it is not passed through constructor
         this.maxScale ??= this.defaultMaxScale;
 
@@ -552,9 +556,9 @@ export class IvyPinch {
         }
     }
 
-    pollLimitZoomForOriginalImage() {
-        let poll = setInterval(() => {
-            let maxScaleForOriginalImage = this.getMaxScaleForOriginalImage();
+    private pollLimitZoomForOriginalImage(): void {
+        const poll = setInterval(() => {
+            const maxScaleForOriginalImage = this.getMaxScaleForOriginalImage();
             if (typeof maxScaleForOriginalImage === 'number') {
                 this.maxScale = maxScaleForOriginalImage;
                 clearInterval(poll);
@@ -562,9 +566,9 @@ export class IvyPinch {
         }, 10);
     }
 
-    getMaxScaleForOriginalImage() {
+    private getMaxScaleForOriginalImage(): number {
         let maxScale!: number;
-        let img = this.element.getElementsByTagName('img')[0];
+        const img = this.element.getElementsByTagName('img')[0];
 
         if (img.naturalWidth && img.offsetWidth) {
             maxScale = img.naturalWidth / img.offsetWidth;
@@ -573,29 +577,35 @@ export class IvyPinch {
         return maxScale;
     }
 
-    getImageElement() {
+    private getImageElement(): HTMLElement {
         const imgElement = this.element.getElementsByTagName(this.elementTarget);
 
         if (imgElement.length) {
-            return imgElement[0];
+            return imgElement[0] as HTMLElement;
         }
     }
 
-    toggleZoom(event: any = false) {
+    private getImageElements(): HTMLCollectionOf<HTMLElement> {
+        return this.element.getElementsByTagName(this.elementTarget) as HTMLCollectionOf<HTMLElement>;
+    }
+
+    public toggleZoom(event: TouchEvent | boolean = false): void {
         if (this.initialScale === 1) {
-            if (event && event.changedTouches) {
+            if (event && (event as TouchEvent).changedTouches) {
                 if (this.properties.doubleTapScale === undefined) {
                     return;
                 }
 
-                const changedTouches = event.changedTouches;
+                const changedTouches = (event as TouchEvent).changedTouches;
                 this.scale = this.initialScale * this.properties.doubleTapScale;
                 this.moveX =
-                    this.initialMoveX - (changedTouches[0].clientX - this.elementPosition.left) * (this.properties.doubleTapScale - 1);
+                    this.initialMoveX -
+                    (changedTouches[0].clientX - this.elementPosition.left) * (this.properties.doubleTapScale - 1);
                 this.moveY =
-                    this.initialMoveY - (changedTouches[0].clientY - this.elementPosition.top) * (this.properties.doubleTapScale - 1);
+                    this.initialMoveY -
+                    (changedTouches[0].clientY - this.elementPosition.top) * (this.properties.doubleTapScale - 1);
             } else {
-                let zoomControlScale = this.properties.zoomControlScale || 0;
+                const zoomControlScale = this.properties.zoomControlScale || 0;
                 this.scale = this.initialScale * (zoomControlScale + 1);
                 this.moveX = this.initialMoveX - (this.element.offsetWidth * (this.scale - 1)) / 2;
                 this.moveY = this.initialMoveY - (this.element.offsetHeight * (this.scale - 1)) / 2;
@@ -609,14 +619,14 @@ export class IvyPinch {
         }
     }
 
-    setZoom(properties: { scale: number; center?: number[] }) {
+    private setZoom(properties: { scale: number; center?: number[] }): void {
         this.scale = properties.scale;
 
         let xCenter;
         let yCenter;
-        let visibleAreaWidth = this.element.offsetWidth;
-        let visibleAreaHeight = this.element.offsetHeight;
-        let scalingPercent = (visibleAreaWidth * this.scale) / (visibleAreaWidth * this.initialScale);
+        const visibleAreaWidth = this.element.offsetWidth;
+        const visibleAreaHeight = this.element.offsetHeight;
+        const scalingPercent = (visibleAreaWidth * this.scale) / (visibleAreaWidth * this.initialScale);
 
         if (properties.center) {
             xCenter = properties.center[0];
@@ -634,7 +644,7 @@ export class IvyPinch {
         this.transformElement(this.properties.transitionDuration);
     }
 
-    alignImage() {
+    private alignImage(): void {
         const isMoveChanged = this.centeringImage();
 
         if (isMoveChanged) {
@@ -643,12 +653,12 @@ export class IvyPinch {
         }
     }
 
-    destroy() {
+    public destroy(): void {
         this.removeBasicStyles();
         this.touches.destroy();
     }
 
-    getPropertiesValue(propertyName: PropertyName) {
+    private getPropertiesValue<K extends keyof Properties>(propertyName: K): Properties[K] {
         if (this.properties && this.properties[propertyName]) {
             return this.properties[propertyName];
         } else {

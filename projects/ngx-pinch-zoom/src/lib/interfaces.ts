@@ -1,5 +1,5 @@
 export interface Properties {
-    element?: string;
+    element?: HTMLElement;
     doubleTap?: boolean;
     doubleTapScale?: number;
     zoomControlScale?: number;
@@ -10,8 +10,7 @@ export interface Properties {
     limitPan?: boolean;
     minPanScale?: number;
     minScale?: number;
-    eventHandler?: any;
-    listeners?: string | 'auto' | 'mouse and touch';
+    listeners?: 'auto' | 'mouse and touch';
     wheel?: boolean;
     fullImage?: {
         path: string;

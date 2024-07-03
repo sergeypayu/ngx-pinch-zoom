@@ -15,7 +15,7 @@ export const defaultProperties: Properties = {
     draggableImage: false,
 };
 
-export const backwardCompatibilityProperties: any = {
+export const backwardCompatibilityProperties = {
     'transition-duration': 'transitionDuration',
     transitionDurationBackwardCompatibility: 'transitionDuration',
     'double-tap': 'doubleTap',
