@@ -143,14 +143,20 @@ export class PinchZoomComponent implements OnInit, OnDestroy, OnChanges {
     @Input() wheelZoomFactor!: number;
     @Input() draggableImage!: boolean;
 
+    @HostBinding('style.zIndex')
+    get hostZIndex(): number | undefined {
+        // need to set z-index for the pinch-zoom component, so it will overlap other <pinch-zoom> if any
+        return this._properties.overflow === 'visible' ? 1 : undefined;
+    }
+
     @HostBinding('style.overflow')
     get hostOverflow(): 'hidden' | 'visible' {
-        return this.properties['overflow'];
+        return this._properties.overflow;
     }
 
     @HostBinding('style.background-color')
     get hostBackgroundColor(): string {
-        return this.properties['backgroundColor'];
+        return this._properties.backgroundColor;
     }
 
     get isTouchScreen(): boolean {
@@ -231,7 +237,7 @@ export class PinchZoomComponent implements OnInit, OnDestroy, OnChanges {
 
         this._properties.limitZoom = this.limitZoom;
         this._properties.element = this.elementRef.nativeElement.querySelector('.pinch-zoom-content');
-        this.pinchZoom = new IvyPinch(this.properties);
+        this.pinchZoom = new IvyPinch(this._properties);
     }
 
     private getProperties(
@@ -296,8 +302,8 @@ export class PinchZoomComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     private getPropertiesValue<K extends keyof ComponentProperties>(propertyName: K): ComponentProperties[K] {
-        if (this.properties && this.properties[propertyName]) {
-            return this.properties[propertyName];
+        if (this._properties && this._properties[propertyName]) {
+            return this._properties[propertyName];
         } else {
             return this.defaultComponentProperties[propertyName];
         }
