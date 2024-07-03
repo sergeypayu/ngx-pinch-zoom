@@ -180,6 +180,11 @@ export class Touches {
     /* Mousedown */
 
     private handleMousedown = (event: MouseEvent): void => {
+        // ignore non-left button clicks
+        if (event.button !== 0) {
+            return;
+        }
+
         this.isMousedown = true;
         this.elementPosition = this.getElementPosition();
         this.touchstartTime = new Date().getTime();
