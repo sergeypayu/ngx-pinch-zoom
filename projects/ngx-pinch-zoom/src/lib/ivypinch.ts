@@ -53,11 +53,7 @@ export class IvyPinch {
             element: properties.element,
             listeners: properties.listeners,
             resize: properties.autoHeight,
-            mouseListeners: {
-                mousedown: 'handleMousedown',
-                mouseup: 'handleMouseup',
-                wheel: 'handleWheel',
-            },
+            mouseListeners: ['mousedown', 'mouseup', 'wheel'],
         });
 
         /* Init */
@@ -69,6 +65,7 @@ export class IvyPinch {
 
         this.touches.on('touchstart', this.handleTouchstart);
         this.touches.on('touchend', this.handleTouchend);
+        this.touches.on('touchcancel', this.handleTouchcancel);
         this.touches.on('mousedown', this.handleTouchstart);
         this.touches.on('mouseup', this.handleTouchend);
         this.touches.on('pan', this.handlePan);
@@ -91,7 +88,7 @@ export class IvyPinch {
     /* Touchstart */
 
     private handleTouchstart = (event: TouchEvent | MouseEvent): void => {
-        this.touches.addEventListeners('mousemove');
+        this.touches.addEventListeners(['mousemove']);
         this.getElementPosition();
 
         if (this.eventType === undefined) {
@@ -144,7 +141,18 @@ export class IvyPinch {
             this.eventType = undefined;
         }
 
-        this.touches.removeEventListeners('mousemove');
+        this.touches.removeEventListeners(['mousemove']);
+    };
+
+    /* Touchcancel */
+
+    private handleTouchcancel = (_event: TouchEvent): void => {
+        this.scale = 1;
+        this.alignImage();
+        this.updateInitialValues();
+        this.eventType = undefined;
+
+        this.touches.removeEventListeners(['mousemove']);
     };
 
     /*

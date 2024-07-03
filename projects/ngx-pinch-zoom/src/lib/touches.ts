@@ -1,43 +1,28 @@
-export interface Params {
+interface Params {
     element: HTMLElement;
     listeners?: 'auto' | 'mouse and touch';
-    touchListeners?: TouchListeners;
-    mouseListeners?: MouseListeners;
-    otherListeners?: OtherListeners;
+    touchListeners?: TouchListener[];
+    mouseListeners?: MouseListener[];
+    otherListeners?: OtherListener[];
     resize?: boolean;
 }
 
-export type EventType =
-    | undefined
-    | 'touchstart'
-    | 'touchend'
-    | 'touchmove'
-    | 'mousedown'
-    | 'mouseup'
-    | 'mousemove'
-    | 'pan'
-    | 'pinch'
-    | 'horizontal-swipe'
-    | 'vertical-swipe'
-    | 'tap'
-    | 'longtap'
-    | 'wheel'
-    | 'double-tap'
-    | 'resize';
-export type TouchHandler = 'handleTouchstart' | 'handleTouchmove' | 'handleTouchend';
-export type MouseHandler = 'handleMousedown' | 'handleMousemove' | 'handleMouseup' | 'handleWheel';
-export type OtherHandler = 'handleResize';
+type TouchListener = 'touchstart' | 'touchmove' | 'touchend' | 'touchcancel';
+type MouseListener = 'mousedown' | 'mousemove' | 'mouseup' | 'wheel';
+type OtherListener = 'resize';
 
-export type TouchListeners = Partial<Record<'touchstart' | 'touchmove' | 'touchend', TouchHandler>>;
-export type MouseListeners = Partial<Record<'mousedown' | 'mousemove' | 'mouseup' | 'wheel', MouseHandler>>;
-export type OtherListeners = Partial<Record<'resize', OtherHandler>>;
+type ListenerType = TouchListener | MouseListener | OtherListener;
+export type EventType = ListenerType | 'pan' | 'pinch' | 'horizontal-swipe' | 'vertical-swipe' | 'tap' | 'longtap' | 'double-tap';
+
+const windowListeners = ['resize'];
+const documentListeners = ['mouseup', 'mousemove'];
 
 export class Touches {
-    private properties: Params;
+    private listeners = new Map<ListenerType, (event: Event) => void>();
     private element: HTMLElement;
     private elementPosition: DOMRect;
     private eventType: EventType = undefined;
-    private handlers: TouchListeners | MouseListeners | OtherListeners = {};
+    private handlers = new Map<EventType, (event: Event) => void>();
     private startX = 0;
     private startY = 0;
     private lastTap = 0;
@@ -48,97 +33,84 @@ export class Touches {
     private detectSwipeCounter: number = 0;
     private isMousedown = false;
 
-    private _touchListeners: Record<'touchstart' | 'touchmove' | 'touchend', TouchHandler> = {
-        touchstart: 'handleTouchstart',
-        touchmove: 'handleTouchmove',
-        touchend: 'handleTouchend',
-    };
-    private _mouseListeners: Record<'mousedown' | 'mousemove' | 'mouseup' | 'wheel', MouseHandler> = {
-        mousedown: 'handleMousedown',
-        mousemove: 'handleMousemove',
-        mouseup: 'handleMouseup',
-        wheel: 'handleWheel',
-    };
-    private _otherListeners: Record<'resize', OtherHandler> = {
-        resize: 'handleResize',
-    };
-
-    private get touchListeners(): TouchListeners {
-        return this.properties.touchListeners ? this.properties.touchListeners : this._touchListeners;
-    }
-
-    private get mouseListeners(): MouseListeners {
-        return this.properties.mouseListeners ? this.properties.mouseListeners : this._mouseListeners;
-    }
-
-    private get otherListeners(): OtherListeners {
-        return this.properties.otherListeners ? this.properties.otherListeners : this._otherListeners;
-    }
-
     constructor(params: Params) {
-        this.properties = params;
-        this.element = this.properties.element;
+        this.element = params.element;
         this.elementPosition = this.getElementPosition();
 
-        this.toggleEventListeners('addEventListener');
+        const touchEvents = params.touchListeners ?? ['touchstart', 'touchend', 'touchmove'];
+        // touchcancel should be handled always
+        touchEvents.push('touchcancel');
+        const mouseEvents = params.mouseListeners ?? ['mousedown', 'mousemove', 'mouseup', 'wheel'];
+        const otherEvents = ['resize'] as OtherListener[];
+
+        let listeners: (TouchListener | MouseListener | OtherListener)[];
+
+        if (params.listeners === 'mouse and touch') {
+            listeners = [...touchEvents, ...mouseEvents];
+        } else if (this.detectTouchScreen()) {
+            listeners = touchEvents;
+        } else {
+            listeners = mouseEvents;
+        }
+
+        if (params.resize) {
+            listeners.push(...otherEvents);
+        }
+
+        // filter-out non-unique listeners
+        this.addEventListeners([...new Set(listeners)]);
     }
 
     public destroy(): void {
-        this.toggleEventListeners('removeEventListener');
+        this.removeEventListeners(Array.from(this.listeners.keys()));
     }
 
-    private toggleEventListeners(action: 'addEventListener' | 'removeEventListener'): void {
-        let listeners: TouchListeners | MouseListeners | OtherListeners;
+    public addEventListeners(listeners: ListenerType[]): void {
+        const handlers = {
+            touchstart: this.handleTouchstart,
+            touchend: this.handleTouchend,
+            touchmove: this.handleTouchmove,
+            touchcancel: this.handleTouchcancel,
+            mousedown: this.handleMousedown,
+            mousemove: this.handleMousemove,
+            mouseup: this.handleMouseup,
+            wheel: this.handleWheel,
+            resize: this.handleResize,
+        };
 
-        if (this.properties.listeners === 'mouse and touch') {
-            listeners = Object.assign(this.touchListeners, this.mouseListeners);
-        } else {
-            listeners = this.detectTouchScreen() ? this.touchListeners : this.mouseListeners;
-        }
+        for (const listener of listeners) {
+            if (this.listeners.has(listener)) {
+                continue;
+            }
 
-        if (this.properties.resize) {
-            listeners = Object.assign(listeners, this.otherListeners);
-        }
+            this.listeners.set(listener, handlers[listener]);
 
-        for (const listener in listeners) {
-            const handler = listeners[listener];
-
-            // Window
-            if (listener === 'resize') {
-                if (action === 'addEventListener') {
-                    window.addEventListener(listener, this[handler], false);
-                }
-                if (action === 'removeEventListener') {
-                    window.removeEventListener(listener, this[handler], false);
-                }
-                // Document
-            } else if (listener === 'mouseup' || listener === 'mousemove') {
-                if (action === 'addEventListener') {
-                    document.addEventListener(listener, this[handler], false);
-                }
-                if (action === 'removeEventListener') {
-                    document.removeEventListener(listener, this[handler], false);
-                }
-                // Element
+            if (windowListeners.includes(listener)) {
+                window.addEventListener(listener, this.listeners.get(listener));
+            } else if (documentListeners.includes(listener)) {
+                document.addEventListener(listener, this.listeners.get(listener));
             } else {
-                if (action === 'addEventListener') {
-                    this.element.addEventListener(listener, this[handler], false);
-                }
-                if (action === 'removeEventListener') {
-                    this.element.removeEventListener(listener, this[handler], false);
-                }
+                this.element.addEventListener(listener, this.listeners.get(listener));
             }
         }
     }
 
-    public addEventListeners(listener: string): void {
-        const handler: MouseHandler = this._mouseListeners[listener];
-        window.addEventListener(listener, this[handler], false);
-    }
+    public removeEventListeners(listeners: ListenerType[]): void {
+        for (const listener of listeners) {
+            if (!this.listeners.has(listener)) {
+                continue;
+            }
 
-    public removeEventListeners(listener: string): void {
-        const handler: MouseHandler = this._mouseListeners[listener];
-        window.removeEventListener(listener, this[handler], false);
+            if (windowListeners.includes(listener)) {
+                window.removeEventListener(listener, this.listeners.get(listener));
+            } else if (documentListeners.includes(listener)) {
+                document.removeEventListener(listener, this.listeners.get(listener));
+            } else {
+                this.element.removeEventListener(listener, this.listeners.get(listener));
+            }
+
+            this.listeners.delete(listener);
+        }
     }
 
     /*
@@ -194,6 +166,15 @@ export class Touches {
             this.eventType = undefined;
             this.detectSwipeCounter = 0;
         }
+    };
+
+    /* Touchcancel */
+
+    private handleTouchcancel = (event: TouchEvent): void => {
+        this.runHandler('touchcancel', event);
+
+        this.eventType = undefined;
+        this.detectSwipeCounter = 0;
     };
 
     /* Mousedown */
@@ -264,9 +245,9 @@ export class Touches {
         this.runHandler('resize', event);
     };
 
-    private runHandler(eventName: EventType, event: unknown): void {
-        if (this.handlers[eventName]) {
-            this.handlers[eventName](event);
+    private runHandler(eventName: EventType, event: Event): void {
+        if (this.handlers.has(eventName)) {
+            this.handlers.get(eventName)(event);
         }
     }
 
@@ -310,9 +291,9 @@ export class Touches {
 
         if (tapLength > 0) {
             if (tapLength < this.tapMinTimeout) {
-                this.runHandler('tap', {});
+                this.runHandler('tap', {} as Event);
             } else {
-                this.runHandler('longtap', {});
+                this.runHandler('longtap', {} as Event);
             }
         }
     }
@@ -406,7 +387,7 @@ export class Touches {
     /* Public properties and methods */
     public on(eventType: EventType, handler: (event: Event) => void): void {
         if (eventType) {
-            this.handlers[eventType] = handler;
+            this.handlers.set(eventType, handler);
         }
     }
 }
