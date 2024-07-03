@@ -99,6 +99,11 @@ export class IvyPinch {
     /* Touchend */
 
     private handleTouchend = (event: TouchEvent | MouseEvent): void => {
+        // restore original image position
+        if (this.centeringImage()) {
+            this.transformElement(this.properties.transitionDuration);
+        }
+
         /* touchend */
         if (event.type === 'touchend') {
             const touches = (event as TouchEvent).touches;
@@ -179,11 +184,6 @@ export class IvyPinch {
         if (this.properties.limitPan) {
             this.limitPanY();
             this.limitPanX();
-        }
-
-        /* mousemove */
-        if (event.type === 'mousemove' && this.scale > this.minPanScale) {
-            this.centeringImage();
         }
 
         this.transformElement(0);
