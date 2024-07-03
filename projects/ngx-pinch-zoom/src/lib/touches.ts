@@ -174,24 +174,6 @@ export class Touches {
         }
     };
 
-    private handleLinearSwipe(event: any): void {
-        //event.preventDefault();
-
-        this.i++;
-
-        if (this.i > 3) {
-            this.eventType = this.getLinearSwipeType(event);
-        }
-
-        if (this.eventType === 'horizontal-swipe') {
-            this.runHandler('horizontal-swipe', event);
-        }
-
-        if (this.eventType === 'vertical-swipe') {
-            this.runHandler('vertical-swipe', event);
-        }
-    }
-
     /* Touchend */
 
     private handleTouchend = (event: TouchEvent): void => {
@@ -241,28 +223,20 @@ export class Touches {
         this.runHandler('pan', event);
 
         // Linear swipe
-        switch (this.detectLinearSwipe(event)) {
-            case 'horizontal-swipe':
-                // FIXME: looks like an error
-                // @ts-ignore
-                event.swipeType = 'horizontal-swipe';
-                this.runHandler('horizontal-swipe', event);
-                break;
-            case 'vertical-swipe':
-                // FIXME: looks like an error
-                // @ts-ignore
-                event.swipeType = 'vertical-swipe';
-                this.runHandler('vertical-swipe', event);
-                break;
-        }
+        if (this.detectLinearSwipe(event)) {
+            this.i++;
 
-        // Linear swipe
-        if (
-            this.detectLinearSwipe(event) ||
-            this.eventType === 'horizontal-swipe' ||
-            this.eventType === 'vertical-swipe'
-        ) {
-            this.handleLinearSwipe(event);
+            if (this.i > 3) {
+                this.eventType = this.getLinearSwipeType(event);
+            }
+
+            if (this.eventType === 'horizontal-swipe') {
+                this.runHandler('horizontal-swipe', event);
+            }
+
+            if (this.eventType === 'vertical-swipe') {
+                this.runHandler('vertical-swipe', event);
+            }
         }
     };
 
