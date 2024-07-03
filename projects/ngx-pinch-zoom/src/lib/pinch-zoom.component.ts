@@ -240,9 +240,7 @@ export class PinchZoomComponent implements OnInit, OnDestroy, OnChanges {
         this.pinchZoom = new IvyPinch(this._properties);
     }
 
-    private getProperties(
-        changes: SimpleChanges,
-    ): ComponentProperties | Record<keyof typeof backwardCompatibilityProperties, unknown> {
+    private getProperties(changes: SimpleChanges): ComponentProperties | Record<keyof typeof backwardCompatibilityProperties, unknown> {
         let properties: ComponentProperties = {};
 
         for (const prop in changes) {
@@ -257,7 +255,7 @@ export class PinchZoomComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     private renameProperties(
-        properties: ComponentProperties | Record<keyof typeof backwardCompatibilityProperties, unknown>,
+        properties: ComponentProperties | Record<keyof typeof backwardCompatibilityProperties, unknown>
     ): ComponentProperties {
         for (const prop in properties) {
             if (backwardCompatibilityProperties[prop]) {

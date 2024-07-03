@@ -1,4 +1,4 @@
-export interface Properties {
+export interface Params {
     element: HTMLElement;
     listeners?: 'auto' | 'mouse and touch';
     touchListeners?: TouchListeners;
@@ -24,7 +24,7 @@ export type EventType =
     | 'wheel'
     | 'double-tap'
     | 'resize';
-export type TouchHandler ='handleTouchstart' | 'handleTouchmove' | 'handleTouchend';
+export type TouchHandler = 'handleTouchstart' | 'handleTouchmove' | 'handleTouchend';
 export type MouseHandler = 'handleMousedown' | 'handleMousemove' | 'handleMouseup' | 'handleWheel';
 export type OtherHandler = 'handleResize';
 
@@ -33,7 +33,7 @@ export type MouseListeners = Partial<Record<'mousedown' | 'mousemove' | 'mouseup
 export type OtherListeners = Partial<Record<'resize', OtherHandler>>;
 
 export class Touches {
-    private properties: Properties;
+    private properties: Params;
     private element: HTMLElement;
     private elementPosition: DOMRect;
     private eventType: EventType = undefined;
@@ -45,7 +45,7 @@ export class Touches {
     private doubleTapMinTimeout = 300;
     private tapMinTimeout = 200;
     private touchstartTime = 0;
-    private i: number = 0;
+    private detectSwipeCounter: number = 0;
     private isMousedown = false;
 
     private _touchListeners: Record<'touchstart' | 'touchmove' | 'touchend', TouchHandler> = {
@@ -75,8 +75,8 @@ export class Touches {
         return this.properties.otherListeners ? this.properties.otherListeners : this._otherListeners;
     }
 
-    constructor(properties: Properties) {
-        this.properties = properties;
+    constructor(params: Params) {
+        this.properties = params;
         this.element = this.properties.element;
         this.elementPosition = this.getElementPosition();
 
@@ -192,7 +192,7 @@ export class Touches {
 
         if (touches && touches.length === 0) {
             this.eventType = undefined;
-            this.i = 0;
+            this.detectSwipeCounter = 0;
         }
     };
 
@@ -224,9 +224,9 @@ export class Touches {
 
         // Linear swipe
         if (this.detectLinearSwipe(event)) {
-            this.i++;
+            this.detectSwipeCounter++;
 
-            if (this.i > 3) {
+            if (this.detectSwipeCounter > 3) {
                 this.eventType = this.getLinearSwipeType(event);
             }
 
@@ -249,7 +249,7 @@ export class Touches {
         this.isMousedown = false;
         this.runHandler('mouseup', event);
         this.eventType = undefined;
-        this.i = 0;
+        this.detectSwipeCounter = 0;
     };
 
     /* Wheel */
@@ -264,7 +264,7 @@ export class Touches {
         this.runHandler('resize', event);
     };
 
-    private runHandler(eventName: EventType, event: unknown):void {
+    private runHandler(eventName: EventType, event: unknown): void {
         if (this.handlers[eventName]) {
             this.handlers[eventName](event);
         }
@@ -326,11 +326,7 @@ export class Touches {
         const touches = (event as TouchEvent).touches;
 
         if (touches) {
-            if (
-                (touches.length === 1 && !this.eventType) ||
-                this.eventType === 'horizontal-swipe' ||
-                this.eventType === 'vertical-swipe'
-            ) {
+            if ((touches.length === 1 && !this.eventType) || this.eventType === 'horizontal-swipe' || this.eventType === 'vertical-swipe') {
                 return this.getLinearSwipeType(event);
             }
         } else {
@@ -401,16 +397,16 @@ export class Touches {
             return true;
         }
 
-        // include the 'heartz' as a way to have a non matching MQ to help terminate the join
+        // include the 'heartz' as a way to have a non-matching MQ to help terminate the join
         // https://git.io/vznFH
         const query = ['(', prefixes.join('touch-enabled),('), 'heartz', ')'].join('');
         return mq(query);
     }
 
     /* Public properties and methods */
-    public on(event: EventType, handler: (event: Event) => void): void {
-        if (event) {
-            this.handlers[event] = handler;
+    public on(eventType: EventType, handler: (event: Event) => void): void {
+        if (eventType) {
+            this.handlers[eventType] = handler;
         }
     }
 }
