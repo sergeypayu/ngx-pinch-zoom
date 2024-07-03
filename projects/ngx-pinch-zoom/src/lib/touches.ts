@@ -368,7 +368,7 @@ export class Touches {
         }
     }
 
-    private detectTouchScreen(): boolean {
+    public detectTouchScreen(): boolean {
         const prefixes = ' -webkit- -moz- -o- -ms- '.split(' ');
         const mq = (query: string): boolean => {
             return window.matchMedia(query).matches;
