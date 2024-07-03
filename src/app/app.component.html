@@ -5,7 +5,7 @@
     <div class="demo">
         <h2>transition-duration: 1000</h2>
         <p>Defines the speed of the animation of positioning and transforming.</p>
-        <pinch-zoom [transition-duration]="1000">
+        <pinch-zoom [params]="{ 'transitionDuration': 1000 }">
             <img
                 src="https://images.unsplash.com/photo-1577234162223-98e9caa94705?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=752&q=80"
             />
@@ -16,7 +16,7 @@
     <div class="demo">
         <h2>limit-zoom: 2</h2>
         <p>Limit the maximum available scale. By default, the maximum scale is calculated based on the original image size.</p>
-        <pinch-zoom [limit-zoom]="2">
+        <pinch-zoom [params]="{ 'limitZoom': 2 }">
             <img
                 src="https://images.unsplash.com/photo-1577234162223-98e9caa94705?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=752&q=80"
             />
@@ -27,7 +27,7 @@
     <div class="demo">
         <h2>minScale: 1</h2>
         <p>Limit the minimum acceptable scale. With a value of 1, it is recommended to use this parameter with limitPan.</p>
-        <pinch-zoom [minScale]="1">
+        <pinch-zoom [params]="{ 'minScale': 1 }">
             <img
                 src="https://images.unsplash.com/photo-1577234162223-98e9caa94705?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=752&q=80"
             />
@@ -38,7 +38,7 @@
     <div class="demo">
         <h2>auto-zoom-out: true</h2>
         <p>Automatic restoration of the original size of an image after its zooming in by two fingers.</p>
-        <pinch-zoom [auto-zoom-out]="true">
+        <pinch-zoom [params]="{ 'autoZoomOut': true }">
             <img
                 src="https://images.unsplash.com/photo-1577234162223-98e9caa94705?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=752&q=80"
             />
@@ -49,7 +49,7 @@
     <div class="demo">
         <h2>double-tap: false</h2>
         <p>Zooming in and zooming out of an image, depending on its current condition, with double tap.</p>
-        <pinch-zoom [double-tap]="false">
+        <pinch-zoom [params]="{ 'doubleTap': false }">
             <img
                 src="https://images.unsplash.com/photo-1577234162223-98e9caa94705?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=752&q=80"
             />
@@ -60,7 +60,7 @@
     <div class="demo">
         <h2>double-tap-scale: 4</h2>
         <p>Double tap scaling factor.</p>
-        <pinch-zoom [double-tap-scale]="4">
+        <pinch-zoom [params]="{ 'doubleTapScale': 4 }">
             <img
                 src="https://images.unsplash.com/photo-1577234162223-98e9caa94705?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=752&q=80"
             />
@@ -81,7 +81,7 @@
     <div class="demo">
         <h2>disablePan: true</h2>
         <p>Turn off panning with one finger.</p>
-        <pinch-zoom [disablePan]="true">
+        <pinch-zoom [params]="{ 'disablePan': true }">
             <img
                 src="https://images.unsplash.com/photo-1577234162223-98e9caa94705?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=752&q=80"
             />
@@ -92,7 +92,7 @@
     <div class="demo">
         <h2>minPanScale: 2</h2>
         <p>Minimum zoom at which panning is enabled.</p>
-        <pinch-zoom [minPanScale]="2">
+        <pinch-zoom [params]="{ 'minPanScale': 2 }">
             <img
                 src="https://images.unsplash.com/photo-1577234162223-98e9caa94705?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=752&q=80"
             />
@@ -131,7 +131,7 @@
     <div class="demo">
         <h2>zoomControlScale: 2</h2>
         <p>Zoom factor when using zoom controls.</p>
-        <pinch-zoom [zoomControlScale]="2">
+        <pinch-zoom [params]="{ 'zoomControlScale': 2 }">
             <img
                 src="https://images.unsplash.com/photo-1577234162223-98e9caa94705?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=752&q=80"
             />
@@ -153,7 +153,7 @@
     <div class="demo">
         <h2>limitPan: true</h2>
         <p>Stop panning when the edge of the image reaches the edge of the screen.</p>
-        <pinch-zoom [limitPan]="true">
+        <pinch-zoom [params]="{ 'limitPan': true }">
             <img
                 src="https://images.unsplash.com/photo-1577234162223-98e9caa94705?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=752&q=80"
             />
@@ -167,7 +167,7 @@
             By default, subscriptions are made for mouse and touch screen events. The value auto means that the subscription will be only
             for touch events or only for mouse events, depending on the type of screen.
         </p>
-        <pinch-zoom [listeners]="'auto'">
+        <pinch-zoom [params]="{ 'listeners': 'auto' }">
             <img
                 src="https://images.unsplash.com/photo-1577234162223-98e9caa94705?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=752&q=80"
             />
@@ -178,7 +178,7 @@
     <div class="demo">
         <h2>wheel: false</h2>
         <p>Scale with the mouse wheel.</p>
-        <pinch-zoom [wheel]="false">
+        <pinch-zoom [params]="{ 'wheel': false }">
             <img
                 src="https://images.unsplash.com/photo-1577234162223-98e9caa94705?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=752&q=80"
             />
@@ -189,7 +189,7 @@
     <div class="demo">
         <h2>wheelZoomFactor: 0.5</h2>
         <p>Zoom factor when zoomed in with the mouse wheel.</p>
-        <pinch-zoom [wheelZoomFactor]="0.5">
+        <pinch-zoom [params]="{ 'wheelZoomFactor': 0.5 }">
             <img
                 src="https://images.unsplash.com/photo-1577234162223-98e9caa94705?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=752&q=80"
             />
@@ -206,7 +206,7 @@
             image, then specify the attributes width and height for the <img /> tag. When setting the property value to `true`, a
             subscription to the window resize listener will be created.
         </p>
-        <pinch-zoom [autoHeight]="true">
+        <pinch-zoom [params]="{ 'autoHeight': true }">
             <img
                 src="https://images.unsplash.com/photo-1577234162223-98e9caa94705?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=752&q=80"
                 width="752"
@@ -219,7 +219,7 @@
     <div class="demo">
         <h2>draggableImage: true</h2>
         <p>Sets the attribute draggable to the img tag.</p>
-        <pinch-zoom [draggableImage]="true">
+        <pinch-zoom [params]="{ 'draggableImage': true }">
             <img
                 src="https://images.unsplash.com/photo-1577234162223-98e9caa94705?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=752&q=80"
             />
