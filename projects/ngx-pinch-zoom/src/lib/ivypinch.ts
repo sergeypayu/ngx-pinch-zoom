@@ -40,9 +40,9 @@ export class IvyPinch {
         this.detectLimitZoom();
 
         this.touches = new Touches({
-            element: params.element,
-            listeners: params.listeners,
-            resize: params.autoHeight,
+            element: this.params.element,
+            listeners: this.params.listeners,
+            resize: this.params.autoHeight,
             mouseListeners: ['mousedown', 'mouseup', 'wheel'],
         });
 
