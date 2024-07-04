@@ -59,24 +59,34 @@
                                     "maximumError": "10kb"
                                 }
                             ]
+                        },
+                        "local": {
+                            "optimization": false,
+                            "extractLicenses": false,
+                            "sourceMap": true,
+                            "namedChunks": true
                         }
                     }
                 },
                 "serve": {
                     "builder": "@angular-devkit/build-angular:dev-server",
                     "options": {
-                        "browserTarget": "ivypinchApp:build"
+                        "buildTarget": "ivypinchApp:build"
                     },
                     "configurations": {
                         "production": {
-                            "browserTarget": "ivypinchApp:build:production"
+                            "buildTarget": "ivypinchApp:build:production"
+                        },
+                        "local": {
+                            "buildTarget": "ivypinchApp:build:local"
                         }
-                    }
+                    },
+                    "defaultConfiguration": "local"
                 },
                 "extract-i18n": {
                     "builder": "@angular-devkit/build-angular:extract-i18n",
                     "options": {
-                        "browserTarget": "ivypinchApp:build"
+                        "buildTarget": "ivypinchApp:build"
                     }
                 },
                 "test": {
